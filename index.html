@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beyond All Reason - Tweak Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/base64-js@1.5.1/base64js.min.js"></script>
+    <script src="unitData.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Beyond All Reason - Tweak Generator</h1>
+
+    <section id="userInput">
+        <h2>Inputs</h2>
+        <div id="messages"></div> <!-- Message display area -->
+        <div>
+            <label for="unitNameSelect">Unit Name:</label>
+            <select id="unitNameSelect" name="unitNameSelect"></select>
+        </div>
+        <div>
+            <label for="statNameSelect">Stat to Modify:</label>
+            <select id="statNameSelect" name="statNameSelect"></select>
+        </div>
+        <div>
+            <label for="statValue">New Value:</label>
+            <input type="number" id="statValue" name="statValue">
+        </div>
+        <button id="generateButton">Generate Tweak</button>
+    </section>
+
+    <section id="results">
+        <h2>Outputs</h2>
+        <div>
+            <label for="luaOutput">Generated Lua Table:</label>
+            <textarea id="luaOutput" name="luaOutput" readonly rows="5" cols="50"></textarea>
+        </div>
+        <div>
+            <label for="base64Output">Base64 Command String:</label>
+            <textarea id="base64Output" name="base64Output" readonly rows="3" cols="50"></textarea>
+        </div>
+    </section>
+</div> <!-- Close container -->
+    <script src="script.js"></script>
+</body>
+</html>

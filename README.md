@@ -47,3 +47,40 @@ Notice the result is `Zm9yIG5hbWUsIHVkIGluIHBhaXJzKFVuaXREZWZzKSBkbwogIGlmIHVkLm
 ## Additional References:
 
 - [ZK Guide](http://zero-k.info/mediawiki/Quick_Stat_Tweaks#Simple_Example)
+
+## WYSIWYG Tweak Generator (Local Web App)
+
+This tool provides a user-friendly interface to generate unit tweaks without manually creating Lua tables and encoding them.
+
+**How to Use:**
+1.  Download the following files into the same directory on your computer:
+    *   `index.html`
+    *   `script.js`
+    *   `style.css`
+    *   `unitData.js`
+2.  Open `index.html` in your web browser (e.g., Chrome, Firefox).
+
+**Interface Guide:**
+*   **Unit Name**: Select the unit you want to modify from the dropdown list. The list includes the readable name and the internal unit definition name (e.g., Pawn (armpw)).
+*   **Stat to Modify**: Select the specific unit statistic you wish to change from the dropdown list (e.g., `metalcost`, `health`). The list currently contains common stats and may be expanded in the future.
+*   **New Value**: Enter the desired new value for the selected statistic.
+*   Click the **Generate Tweak** button.
+
+**Output:**
+*   **Generated Lua Table**: Shows the Lua code snippet that represents your tweak. This is for informational purposes.
+*   **Base64 Command String**: This is the URL-safe Base64 encoded string you need for the game. Copy this string.
+*   To apply the tweak in Beyond All Reason, use the in-game command: `!bset tweakunits <copied_base64_string>` (remember to boss yourself first using `!boss`, and ensure the copied string does not have any extra spaces or characters).
+
+## Web UI for Base64 URL-Safe Encoding/Decoding
+
+This project also includes a simple web interface for URL-safe Base64 encoding and decoding.
+
+**Files:**
+- `index.html`: The main HTML file for the web interface.
+- `script.js`: Contains the JavaScript logic for encoding/decoding, utilizing the `base64-js` library.
+- `style.css`: Basic styling for the web interface.
+
+**Library Used:**
+- **base64-js**: A pure JavaScript Base64 encoder/decoder.
+  - CDN Link: `https://cdn.jsdelivr.net/npm/base64-js@1.5.1/base64js.min.js`
+  - This library is used to handle the Base64 operations. For URL-safe encoding, the standard Base64 output will be modified by replacing `+` with `-`, `/` with `_`, and removing any `=` padding. For decoding, these URL-safe characters will be converted back to their standard Base64 equivalents before decoding.

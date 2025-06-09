@@ -8,9 +8,9 @@ You will be required to boss yourself to be able to set the mod options.
 
 ## Tweak Units: Basic edits to specific units
 
-- Find the units unitdefname on https://github.com/beyond-all-reason/Beyond-All-Reason/blob/master/language/en/units.json. For example: for pawn it's armpw.
+- Find the units unitdefname in the unitNames file in this repository. For example: for pawn it's armpw.
 
-- Consult the units file under https://github.com/beyond-all-reason/Beyond-All-Reason/tree/master/units to check the current stats. For example: for pawn it's https://github.com/beyond-all-reason/Beyond-All-Reason/blob/master/units/ArmBots/armpw.lua
+- Consult the units file under within the units folder to check the current stats. For example: for pawn it's /units/ArmBots/armpw.lua
 
 - Create a table representing the changes. For example, to change pawns metal cost to 10:
 ```lua

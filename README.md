@@ -61,6 +61,11 @@ This tool provides a user-friendly interface to generate unit tweaks without man
 2.  Open `index.html` in your web browser (e.g., Chrome, Firefox).
 
 **Interface Guide:**
+*   **Filter Unit Groups**:
+    Above the list of tweak entries, you'll find a 'Filter Unit Groups' section. This area contains checkboxes for each identified unit faction or group (e.g., Armada (arm), Cortex (cor), Scavengers (scav)).
+    - Initially, all groups are checked (visible).
+    - Uncheck any group's checkbox to hide units belonging to that group from all 'Unit Name' selection dropdowns on the page. This can make it much easier to find specific units by reducing the list size.
+    - Re-check a box to make the units from that group visible again in the dropdowns.
 *   **Unit Name**: Select the unit you want to modify. Units are now grouped by faction (e.g., Armada (arm), Cortex (cor), Legion (leg), Scavengers (scav), etc.) for easier navigation. Scroll through the list to find your desired unit. If the unit you want isn't listed (e.g., a modded unit or a very new one), select the 'Other (Enter Below)' option at the very end of the list. This will reveal a text input field where you can type the exact unit definition name (e.g., `mycustomunitdefname`).
 *   **Stat to Modify**: Select the specific unit statistic you wish to change. If the stat you want isn't listed, select the 'Other (Enter Below)' option. This will reveal a text input field where you can type the exact name of the custom stat (e.g., `maxammo`). The predefined list currently contains common stats and may be expanded in the future.
 *   **New Value**: Enter the desired new value for the selected statistic.

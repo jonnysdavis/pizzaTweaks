@@ -15,6 +15,12 @@
     <section id="userInput">
         <h2>Inputs</h2>
 
+        <h2>Filter Unit Groups</h2>
+        <div id="unitGroupFiltersContainer" style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc;">
+            <!-- Checkboxes will be populated here by JavaScript -->
+            <p style="font-size: 0.9em; color: #555;">Uncheck groups to hide them from the unit selection dropdowns.</p>
+        </div>
+
         <div id="tweakEntriesContainer">
             <div class="tweak-entry">
                 <div>
@@ -29,7 +35,7 @@
                 </div>
                 <div>
                     <label for="statValue_0">New Value:</label>
-                    <input type="number" id="statValue_0" name="statValue_0" class="statValueInput">
+                    <input type="text" id="statValue_0" name="statValue_0" class="statValueInput">
                 </div>
                 <button type="button" class="removeTweakButton" style="display: none;">Remove</button>
             </div>

@@ -279,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateRemoveButtons() { /* ... (no changes here) ... */ }
 
     function createTweakEntry(entryIndex) {
+        console.log(`createTweakEntry called with index: ${entryIndex}`);
         const entryDiv = document.createElement('div');
         entryDiv.classList.add('tweak-entry');
         entryDiv.innerHTML = `
@@ -300,19 +301,42 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         const unitSelect = entryDiv.querySelector(`#unitNameSelect_${entryIndex}`);
         const statSelect = entryDiv.querySelector(`#statNameSelect_${entryIndex}`);
+
+        console.log('Calling populateUnitSelect for new entry...');
         populateUnitSelect(unitSelect);
+        console.log('Finished populateUnitSelect for new entry.');
+
+        console.log('Calling populateStatSelect for new entry...');
         populateStatSelect(statSelect);
+        console.log('Finished populateStatSelect for new entry.');
+
+        console.log('New tweak entry HTML/element:', entryDiv); // Logging the element
+
         const removeButton = entryDiv.querySelector('.removeTweakButton');
         removeButton.addEventListener('click', () => { entryDiv.remove(); updateRemoveButtons(); });
-        console.log(`Created new tweak entry with index ${entryIndex}`);
+
+        console.log(`createTweakEntry finished for index: ${entryIndex}`);
         return entryDiv;
     }
 
-    if (addTweakButton) { /* ... (no changes here) ... */ }
+    if (addTweakButton) {
+        addTweakButton.addEventListener('click', () => {
+            console.log('Add Another Tweak button clicked.'); // Log moved to the top
+            tweakEntryCounter++;
+            const newEntry = createTweakEntry(tweakEntryCounter);
+            tweakEntriesContainer.appendChild(newEntry);
+            updateRemoveButtons();
+        });
+    }
 
     // Initial Setup
     buildUnitGroupsData(); // Build the unitGroups data once
-    initializeUnitGroupFilters(); // Then initialize filters (which uses unitGroups)
+    // Ensure unitGroupFiltersContainer is valid before calling initializeUnitGroupFilters
+    if (unitGroupFiltersContainer) {
+        initializeUnitGroupFilters(); // Then initialize filters (which uses unitGroups)
+    } else {
+        console.error("unitGroupFiltersContainer is null, skipping initializeUnitGroupFilters.");
+    }
 
     const initialUnitSelect = document.getElementById('unitNameSelect_0');
     const initialStatSelect = document.getElementById('statNameSelect_0');

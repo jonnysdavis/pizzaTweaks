@@ -55,26 +55,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function buildUnitGroupsData() {
-        const tempGroupedUnits = {};
+        const SMALL_GROUP_THRESHOLD = 5;
+        const initialUnitGroups = {};
+
         if (typeof unitDatabase !== 'undefined' && unitDatabase.units && unitDatabase.units.names) {
             Object.entries(unitDatabase.units.names).forEach(([unitDefName, readableName]) => {
                 const faction = getFactionInfo(unitDefName);
                 const groupKey = `${faction.displayName} (${faction.prefix})`;
-                if (!tempGroupedUnits[groupKey]) {
-                    tempGroupedUnits[groupKey] = [];
+                if (!initialUnitGroups[groupKey]) {
+                    initialUnitGroups[groupKey] = [];
                 }
-                const optionData = { value: unitDefName, text: `${readableName} (${unitDefName})` };
-                tempGroupedUnits[groupKey].push(optionData);
+                // Store option data, not the element itself yet
+                initialUnitGroups[groupKey].push({ value: unitDefName, text: `${readableName} (${unitDefName})` });
             });
-            // Sort options within each group
-            for (const groupKey in tempGroupedUnits) {
-                tempGroupedUnits[groupKey].sort((a, b) => a.text.localeCompare(b.text));
-            }
         } else {
             console.error('unitDatabase not loaded for buildUnitGroupsData.');
+            unitGroups = {}; // Ensure unitGroups is empty or appropriately handled
+            return;
         }
-        unitGroups = tempGroupedUnits; // Assign to global variable
-        console.log('unitGroups data built:', unitGroups);
+
+        const finalUnitGroups = {};
+        let otherUnitsOptions = [];
+
+        // Sort group keys before processing for consistent "Other Units" later if multiple small groups exist
+        const sortedInitialGroupKeys = Object.keys(initialUnitGroups).sort();
+
+        for (const groupKey of sortedInitialGroupKeys) {
+            const optionsArray = initialUnitGroups[groupKey];
+            // Sort options within this specific group first
+            optionsArray.sort((a, b) => a.text.localeCompare(b.text));
+
+            if (optionsArray.length <= SMALL_GROUP_THRESHOLD) {
+                otherUnitsOptions.push(...optionsArray);
+            } else {
+                finalUnitGroups[groupKey] = optionsArray;
+            }
+        }
+
+        if (otherUnitsOptions.length > 0) {
+            // Sort all collected "other" units together
+            otherUnitsOptions.sort((a, b) => a.text.localeCompare(b.text));
+            finalUnitGroups['Other Units'] = otherUnitsOptions;
+        }
+
+        unitGroups = finalUnitGroups; // Assign consolidated groups to global variable
+        console.log('Consolidated unitGroups data built:', unitGroups);
     }
 
     function populateUnitSelect(unitSelectElement) {

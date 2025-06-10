@@ -169,19 +169,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Function to handle unit dropdown change ---
     function handleUnitDropdownChange(event) {
+        console.log('Unit dropdown changed:', event.target);
+        console.log('Selected unit option value:', event.target.value);
         const unitSelect = event.target;
         const tweakEntryDiv = unitSelect.closest('.tweak-entry');
-        if (!tweakEntryDiv) return;
+        console.log('Parent tweak entry div:', tweakEntryDiv);
+        if (!tweakEntryDiv) {
+            console.error('CRITICAL: Parent .tweak-entry not found for unit select!');
+            return;
+        }
         const customUnitInput = tweakEntryDiv.querySelector('.customUnitNameInput');
-        if (!customUnitInput) return;
+        console.log('Found customUnitNameInput element:', customUnitInput);
+        if (!customUnitInput) {
+            console.error('CRITICAL: customUnitNameInput not found in tweak entry div!', tweakEntryDiv);
+            return;
+        }
 
+        console.log(`Current customUnitInput display style: '${customUnitInput.style.display}'`);
         if (unitSelect.value === '_custom_') {
-            console.log('Custom unit selected. Showing input.');
+            console.log('Custom unit selected. Attempting to show customUnitNameInput.');
             customUnitInput.style.display = 'inline-block';
+            console.log(`New customUnitInput display style: '${customUnitInput.style.display}'`);
         } else {
-            console.log('Predefined unit selected. Hiding custom unit input.');
+            console.log('Predefined unit selected. Attempting to hide customUnitNameInput.');
             customUnitInput.style.display = 'none';
             customUnitInput.value = '';
+            console.log(`New customUnitInput display style: '${customUnitInput.style.display}'`);
         }
     }
 

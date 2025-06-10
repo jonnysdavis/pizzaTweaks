@@ -155,9 +155,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleStatDropdownChange(event) {
         const statSelect = event.target;
         const tweakEntryDiv = statSelect.closest('.tweak-entry');
-        if (!tweakEntryDiv) return;
-        const customInput = tweakEntryDiv.querySelector('.customStatNameInput');
-        if (!customInput) return;
+        if (!tweakEntryDiv) {
+            console.error("Could not find parent .tweak-entry for stat select in handleStatDropdownChange");
+            return;
+        }
+        // Use the new distinct class name for the custom stat input field
+        const customInput = tweakEntryDiv.querySelector('.customStatInputField');
+        if (!customInput) {
+            console.error("CRITICAL: .customStatInputField not found in tweak entry div!", tweakEntryDiv);
+            return;
+        }
 
         if (statSelect.value === '_custom_') {
             customInput.style.display = 'inline-block';
@@ -237,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div>
                 <label for="statNameSelect_${entryIndex}">Stat to Modify:</label>
                 <select id="statNameSelect_${entryIndex}" name="statNameSelect_${entryIndex}" class="statNameSelect"></select>
-                <input type="text" id="customStatNameInput_${entryIndex}" name="customStatNameInput_${entryIndex}" class="customStatNameInput" style="display:none; margin-top: 5px;" placeholder="Enter custom stat name">
+                <input type="text" id="customStatInputField_${entryIndex}" name="customStatInputField_${entryIndex}" class="customStatInputField" style="display:none; margin-top: 5px;" placeholder="Enter custom stat name">
             </div>
             <div>
                 <label for="statValue_${entryIndex}">New Value:</label>
@@ -320,14 +327,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 let unitNameValue = entryDiv.querySelector('.unitNameSelect').value;
                 const customUnitNameInput = entryDiv.querySelector('.customUnitNameInput');
                 let statNameValue = entryDiv.querySelector('.statNameSelect').value;
-                const customStatNameInput = entryDiv.querySelector('.customStatNameInput');
+                const customStatInputField = entryDiv.querySelector('.customStatInputField'); // Use new class
                 const statValueRaw = entryDiv.querySelector('.statValueInput').value;
                 const statValueTrimmed = statValueRaw.trim();
 
                 console.log(`Entry ${index}: UnitDropdown='${unitNameValue}', StatDropdown='${statNameValue}', RawValue='${statValueRaw}'`);
 
                 if (unitNameValue === '_custom_') {
-                    unitNameValue = customUnitNameInput.value.trim();
+                    unitNameValue = customUnitNameInput.value.trim(); // This remains .customUnitNameInput
                     console.log(`Entry ${index}: Custom unit selected. CustomUnitName='${unitNameValue}'`);
                     if (!unitNameValue) {
                         displayMessage(`Error in Entry #${index + 1}: Custom unit name cannot be empty when 'Other' is selected.`, 'error-message');
@@ -336,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (statNameValue === '_custom_') {
-                    statNameValue = customStatNameInput.value.trim();
+                    statNameValue = customStatInputField.value.trim(); // Use new variable for clarity
                     console.log(`Entry ${index}: Custom stat selected. CustomStatName='${statNameValue}'`);
                     if (!statNameValue) {
                         displayMessage(`Error in Entry #${index + 1}: Custom stat name cannot be empty when 'Other' is selected.`, 'error-message');

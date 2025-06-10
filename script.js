@@ -176,6 +176,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Function to handle unit dropdown change ---
     function handleUnitDropdownChange(event) {
+        if (event.target.id === 'unitNameSelect_0') {
+            console.log('Handling change for the VERY FIRST unit dropdown (unitNameSelect_0).');
+        }
         console.log('Unit dropdown changed:', event.target);
         console.log('Selected unit option value:', event.target.value);
         const unitSelect = event.target;

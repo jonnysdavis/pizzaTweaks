@@ -12,39 +12,64 @@
 <div class="container">
     <h1>Beyond All Reason - Tweak Generator</h1>
 
+    <div id="modeSelection" style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+        <label style="margin-right: 10px;">
+            <input type="radio" name="tweakMode" value="units" checked> Tweak Specific Units
+        </label>
+        <label>
+            <input type="radio" name="tweakMode" value="defs"> Tweak Definitions (Advanced Lua Script)
+        </label>
+    </div>
+
     <section id="userInput">
-        <h2>Inputs</h2>
-
-        <h2>Filter Unit Groups</h2>
-        <div id="unitGroupFiltersContainer" style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc;">
-            <!-- Checkboxes will be populated here by JavaScript -->
-            <p style="font-size: 0.9em; color: #555;">Uncheck groups to hide them from the unit selection dropdowns.</p>
-        </div>
-
-        <div id="tweakEntriesContainer">
-            <div class="tweak-entry">
-                <div>
-                    <label for="unitNameSelect_0">Unit Name:</label>
-                    <select id="unitNameSelect_0" name="unitNameSelect_0" class="unitNameSelect"></select>
-                    <input type="text" id="customUnitNameInput_0" name="customUnitNameInput_0" class="customUnitNameInput" style="display:none; margin-top: 5px;" placeholder="Enter custom unit def name">
-                </div>
-                <div>
-                    <label for="statNameSelect_0">Stat to Modify:</label>
-                    <select id="statNameSelect_0" name="statNameSelect_0" class="statNameSelect"></select>
-                    <input type="text" id="customStatInputField_0" name="customStatInputField_0" class="customStatInputField" style="display:none; margin-top: 5px;" placeholder="Enter custom stat name">
-                </div>
-                <div>
-                    <label for="statValue_0">New Value:</label>
-                    <input type="text" id="statValue_0" name="statValue_0" class="statValueInput">
-                </div>
-                <button type="button" class="removeTweakButton" style="display: none;">Remove</button>
+        <!-- This div will wrap the "Tweak Specific Units" UI -->
+        <div id="tweakUnitsInterface">
+            <h2>Inputs - Specific Units</h2> <!-- Updated heading for clarity -->
+            <h2>Filter Unit Groups</h2>
+            <div id="unitGroupFiltersContainer" style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc;">
+                <!-- Checkboxes will be populated here by JavaScript -->
+                <p style="font-size: 0.9em; color: #555;">Uncheck groups to hide them from the unit selection dropdowns.</p>
             </div>
-        </div>
 
-        <button type="button" id="addTweakButton">Add Another Tweak</button>
+            <div id="tweakEntriesContainer">
+                <div class="tweak-entry">
+                    <div>
+                        <label for="unitNameSelect_0">Unit Name:</label>
+                        <select id="unitNameSelect_0" name="unitNameSelect_0" class="unitNameSelect"></select>
+                        <input type="text" id="customUnitNameInput_0" name="customUnitNameInput_0" class="customUnitNameInput" style="display:none; margin-top: 5px;" placeholder="Enter custom unit def name">
+                    </div>
+                    <div>
+                        <label for="statNameSelect_0">Stat to Modify:</label>
+                        <select id="statNameSelect_0" name="statNameSelect_0" class="statNameSelect"></select>
+                        <input type="text" id="customStatInputField_0" name="customStatInputField_0" class="customStatInputField" style="display:none; margin-top: 5px;" placeholder="Enter custom stat name">
+                    </div>
+                    <div>
+                        <label for="statValue_0">New Value:</label>
+                        <input type="text" id="statValue_0" name="statValue_0" class="statValueInput">
+                    </div>
+                    <button type="button" class="removeTweakButton" style="display: none;">Remove</button>
+                </div>
+            </div>
+            <button type="button" id="addTweakButton">Add Another Tweak</button>
+        </div> <!-- End of tweakUnitsInterface -->
 
-        <div id="messages"></div> <!-- Message display area -->
-        <button id="generateButton">Generate All Tweaks</button> <!-- Renamed button -->
+        <!-- This div is for the "Tweak Definitions" UI -->
+        <div id="tweakDefsInterface" style="display:none;">
+            <h2>Tweak Definitions Script</h2>
+            <div>
+                <label for="tweakDefsScriptInput">Enter Lua Script:</label>
+                <textarea id="tweakDefsScriptInput" name="tweakDefsScriptInput" rows="10" style="width: 98%; margin-top: 5px;" placeholder="Enter your Lua script here... for example:
+
+for name, ud in pairs(UnitDefs) do
+  if ud.metalcost then
+    ud.metalcost = 10
+  end
+end"></textarea>
+            </div>
+        </div> <!-- End of tweakDefsInterface -->
+
+        <div id="messages"></div> <!-- Message display area - remains visible -->
+        <button id="generateButton">Generate All Tweaks</button> <!-- Remains visible -->
     </section>
 
     <section id="results">

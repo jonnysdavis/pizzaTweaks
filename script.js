@@ -19,6 +19,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const unitGroupFiltersContainer = document.getElementById('unitGroupFiltersContainer');
     console.log('unitGroupFiltersContainer:', unitGroupFiltersContainer);
 
+    // Mode switching elements
+    const modeRadios = document.querySelectorAll('input[name="tweakMode"]');
+    console.log('modeRadios:', modeRadios);
+    const tweakUnitsInterface = document.getElementById('tweakUnitsInterface');
+    console.log('tweakUnitsInterface:', tweakUnitsInterface);
+    const tweakDefsInterface = document.getElementById('tweakDefsInterface');
+    console.log('tweakDefsInterface:', tweakDefsInterface);
+    const tweakDefsScriptInput = document.getElementById('tweakDefsScriptInput');
+    console.log('tweakDefsScriptInput:', tweakDefsScriptInput);
+
     const commonStats = ['metalcost', 'energycost', 'buildcostenergy', 'buildcostmetal', 'buildtime', 'health', 'maxdamage', 'speed', 'description', 'tooltip', 'unitname'];
     const knownNumericStats = new Set(['metalcost', 'energycost', 'buildtime', 'health', 'maxdamage', 'speed', 'buildcostenergy', 'buildcostmetal']);
 
@@ -349,67 +359,116 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (generateButton) { /* ... (Generate All Tweaks logic - no fundamental changes here, only relies on correct values from selects) ... */ }
 
-    // --- Generate All Tweaks logic (shortened for brevity, no functional change from previous correct version) ---
+    // --- Generate All Tweaks logic ---
     if (generateButton) {
         generateButton.addEventListener('click', () => {
-            console.log('Generate All Tweaks button click event fired!');
+            const currentMode = document.querySelector('input[name="tweakMode"]:checked').value;
+            console.log(`Generate All Tweaks button clicked. Mode: ${currentMode}`);
+
             messagesDiv.textContent = '';
             messagesDiv.className = '';
-            const allEntries = tweakEntriesContainer.querySelectorAll('.tweak-entry');
-            let combinedTweaks = {};
-            let validationFailed = false;
+            luaOutputTextarea.value = '';
+            base64OutputTextarea.value = '';
 
-            allEntries.forEach((entryDiv, index) => {
-                if (validationFailed) return;
-                let unitNameValue = entryDiv.querySelector('.unitNameSelect').value;
-                const customUnitNameInput = entryDiv.querySelector('.customUnitNameInput');
-                let statNameValue = entryDiv.querySelector('.statNameSelect').value;
-                const customStatInputField = entryDiv.querySelector('.customStatInputField');
-                const statValueRaw = entryDiv.querySelector('.statValueInput').value;
-                const statValueTrimmed = statValueRaw.trim();
+            if (currentMode === 'units') {
+                const allEntries = tweakEntriesContainer.querySelectorAll('.tweak-entry');
+                let combinedTweaks = {};
+                let validationFailed = false;
 
-                if (unitNameValue === '_custom_') {
-                    unitNameValue = customUnitNameInput.value.trim();
-                    if (!unitNameValue) { displayMessage(`Error in Entry #${index + 1}: Custom unit name empty.`, 'error-message'); validationFailed = true; return; }
+                allEntries.forEach((entryDiv, index) => {
+                    if (validationFailed) return;
+                    let unitNameValue = entryDiv.querySelector('.unitNameSelect').value;
+                    const customUnitNameInput = entryDiv.querySelector('.customUnitNameInput');
+                    let statNameValue = entryDiv.querySelector('.statNameSelect').value;
+                    const customStatInputField = entryDiv.querySelector('.customStatInputField');
+                    const statValueRaw = entryDiv.querySelector('.statValueInput').value;
+                    const statValueTrimmed = statValueRaw.trim();
+
+                    if (unitNameValue === '_custom_') {
+                        unitNameValue = customUnitNameInput.value.trim();
+                        if (!unitNameValue) { displayMessage(`Error in Entry #${index + 1}: Custom unit name empty.`, 'error-message'); validationFailed = true; return; }
+                    }
+                    if (statNameValue === '_custom_') {
+                        statNameValue = customStatInputField.value.trim();
+                        if (!statNameValue) { displayMessage(`Error in Entry #${index + 1}: Custom stat name empty.`, 'error-message'); validationFailed = true; return; }
+                    }
+                    if (!unitNameValue) { displayMessage(`Error in Entry #${index + 1}: Unit Name empty.`, 'error-message'); validationFailed = true; return; }
+                    if (!statNameValue) { displayMessage(`Error in Entry #${index + 1}: Stat Name empty.`, 'error-message'); validationFailed = true; return; }
+                    if (!statValueTrimmed) { displayMessage(`Error in Entry #${index + 1}: New Value empty.`, 'error-message'); validationFailed = true; return; }
+
+                    let formattedStatValue;
+                    const currentStatNameLower = statNameValue.toLowerCase();
+                    if (knownNumericStats.has(currentStatNameLower)) {
+                        const numValue = parseFloat(statValueTrimmed);
+                        if (!isNaN(numValue)) formattedStatValue = numValue;
+                        else { console.warn(`Value '${statValueTrimmed}' for numeric stat '${statNameValue}' is not number. Treating as string.`); formattedStatValue = `"${statValueTrimmed.replace(/"/g, '\\"')}"`; }
+                    } else formattedStatValue = `"${statValueTrimmed.replace(/"/g, '\\"')}"`;
+
+                    if (!combinedTweaks[unitNameValue]) combinedTweaks[unitNameValue] = {};
+                    combinedTweaks[unitNameValue][statNameValue] = formattedStatValue;
+                });
+
+                if (validationFailed) { return; } // Outputs already cleared
+
+                let luaStringParts = [];
+                for (const unit in combinedTweaks) {
+                    let unitStatParts = [];
+                    for (const stat in combinedTweaks[unit]) unitStatParts.push(`    ${stat} = ${combinedTweaks[unit][stat]}`);
+                    luaStringParts.push(`  ${unit} = {\n${unitStatParts.join(',\n')}\n  }`);
                 }
-                if (statNameValue === '_custom_') {
-                    statNameValue = customStatInputField.value.trim();
-                    if (!statNameValue) { displayMessage(`Error in Entry #${index + 1}: Custom stat name empty.`, 'error-message'); validationFailed = true; return; }
+                const luaString = `{\n${luaStringParts.join(',\n')}\n}`;
+                luaOutputTextarea.value = luaString;
+
+                const encoder = new TextEncoder();
+                const luaBytes = encoder.encode(luaString);
+                const standardBase64 = base64js.fromByteArray(luaBytes);
+                let urlSafeBase64 = standardBase64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                base64OutputTextarea.value = urlSafeBase64;
+
+                displayMessage('Unit tweaks generated successfully! Use Base64 string with !bset tweakunits <string>', 'success-message');
+                console.log('Unit tweaks processing complete.');
+
+            } else if (currentMode === 'defs') {
+                const luaScript = tweakDefsScriptInput.value.trim();
+                if (!luaScript) {
+                    displayMessage('Lua script cannot be empty for Tweak Defs.', 'error-message');
+                    return;
                 }
-                if (!unitNameValue) { displayMessage(`Error in Entry #${index + 1}: Unit Name empty.`, 'error-message'); validationFailed = true; return; }
-                if (!statNameValue) { displayMessage(`Error in Entry #${index + 1}: Stat Name empty.`, 'error-message'); validationFailed = true; return; }
-                if (!statValueTrimmed) { displayMessage(`Error in Entry #${index + 1}: New Value empty.`, 'error-message'); validationFailed = true; return; }
+                luaOutputTextarea.value = luaScript; // Display the raw Lua script
 
-                let formattedStatValue;
-                const currentStatNameLower = statNameValue.toLowerCase();
-                if (knownNumericStats.has(currentStatNameLower)) {
-                    const numValue = parseFloat(statValueTrimmed);
-                    if (!isNaN(numValue)) formattedStatValue = numValue;
-                    else { console.warn(`Value '${statValueTrimmed}' for numeric stat '${statNameValue}' is not number. Treating as string.`); formattedStatValue = `"${statValueTrimmed.replace(/"/g, '\\"')}"`; }
-                } else formattedStatValue = `"${statValueTrimmed.replace(/"/g, '\\"')}"`;
+                const encoder = new TextEncoder();
+                const byteArray = encoder.encode(luaScript);
+                const base64String = base64js.fromByteArray(byteArray);
+                const urlSafeBase64 = base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-                if (!combinedTweaks[unitNameValue]) combinedTweaks[unitNameValue] = {};
-                combinedTweaks[unitNameValue][statNameValue] = formattedStatValue;
-            });
-
-            if (validationFailed) { luaOutputTextarea.value = ''; base64OutputTextarea.value = ''; return; }
-
-            let luaStringParts = [];
-            for (const unit in combinedTweaks) {
-                let unitStatParts = [];
-                for (const stat in combinedTweaks[unit]) unitStatParts.push(`    ${stat} = ${combinedTweaks[unit][stat]}`);
-                luaStringParts.push(`  ${unit} = {\n${unitStatParts.join(',\n')}\n  }`);
+                base64OutputTextarea.value = urlSafeBase64;
+                displayMessage('Tweak Defs script processed! Use Base64 string with !bset tweakdefs <string>', 'success-message');
+                console.log('Tweak Defs processing complete.');
             }
-            const luaString = `{\n${luaStringParts.join(',\n')}\n}`;
-            luaOutputTextarea.value = luaString;
-            const encoder = new TextEncoder();
-            const luaBytes = encoder.encode(luaString);
-            const standardBase64 = base64js.fromByteArray(luaBytes);
-            let urlSafeBase64 = standardBase64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-            base64OutputTextarea.value = urlSafeBase64;
-            displayMessage('All tweaks generated successfully!', 'success-message');
-            console.log('Generate All Tweaks processing complete.');
         });
     }
+
+    // --- Mode Switching Logic ---
+    function updateUIMode(mode) {
+        console.log('Updating UI mode to:', mode);
+        if (mode === 'units') {
+            tweakUnitsInterface.style.display = 'block';
+            tweakDefsInterface.style.display = 'none';
+            // generateButton.textContent = 'Generate Unit Tweaks'; // Optional text change
+        } else if (mode === 'defs') {
+            tweakUnitsInterface.style.display = 'none';
+            tweakDefsInterface.style.display = 'block';
+            // generateButton.textContent = 'Generate Tweak Def String'; // Optional text change
+        }
+    }
+
+    modeRadios.forEach(radio => {
+        radio.addEventListener('change', (event) => {
+            updateUIMode(event.target.value);
+        });
+    });
+
+    // Initial UI state setup
+    updateUIMode('units');
 
 });

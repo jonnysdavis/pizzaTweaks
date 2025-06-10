@@ -60,7 +60,12 @@ This tool provides a user-friendly interface to generate unit tweaks without man
     *   `unitData.js`
 2.  Open `index.html` in your web browser (e.g., Chrome, Firefox).
 
-**Interface Guide:**
+**Operating Modes:**
+The tool now operates in two modes, selectable via radio buttons at the top:
+*   **Tweak Specific Units**: This is the default mode for making changes to individual units as described in the "Interface Guide for Tweak Specific Units Mode" below.
+*   **Tweak Definitions (Advanced Lua Script)**: This mode allows you to input a custom Lua script for more complex or global tweaks (similar to the 'Tweak Defs' section in the original part of this README). See "Interface Guide for Tweak Definitions Mode" further below.
+
+**Interface Guide for Tweak Specific Units Mode:**
 *   **Filter Unit Groups**:
     Above the list of tweak entries, you'll find a 'Filter Unit Groups' section. This area contains checkboxes for major unit factions or groups. To keep this filter list manageable, groups with very few units (e.g., 5 or fewer) are consolidated.
     - Initially, all groups are checked (visible).
@@ -71,12 +76,26 @@ This tool provides a user-friendly interface to generate unit tweaks without man
 *   **New Value**: Enter the desired new value for the selected statistic.
 *   **Adding Multiple Tweaks**: Click the 'Add Another Tweak' button to add a new row for defining an additional tweak. You can add as many tweaks as needed.
 *   **Removing a Tweak**: Each tweak entry (except if it's the only one) will have a 'Remove' button next to it. Click this to delete that specific tweak definition.
-*   Click the **Generate All Tweaks** button once you have defined all your desired changes.
 
-**Output:**
-*   **Generated Lua Table**: Shows the single Lua code snippet that represents *all* your defined tweaks, grouped by unit. For example, if you change the metal cost and build time for a Pawn, and the health for a Grunt, the table will reflect both. This is for informational purposes.
-*   **Base64 Command String**: This is the URL-safe Base64 encoded string for the *entire combined set* of tweaks. Copy this string.
-*   To apply the tweak in Beyond All Reason, use the in-game command: `!bset tweakunits <copied_base64_string>` (remember to boss yourself first using `!boss`, and ensure the copied string does not have any extra spaces or characters).
+**Interface Guide for Tweak Definitions Mode:**
+When you select the 'Tweak Definitions (Advanced Lua Script)' mode:
+*   The interface for tweaking specific units (including filters and multiple entries) will be hidden.
+*   A large text area will appear, labeled 'Enter Lua Script'.
+*   Enter your complete Lua script directly into this text area. An example is provided in the placeholder.
+*   Click the **Generate All Tweaks** button.
+*   The 'Generated Lua Table' output area will show your entered script for verification.
+*   The 'Base64 Command String' output area will show the Base64 encoded version of your entire script.
+*   **Important**: For these types of tweaks, you must use the in-game command `!bset tweakdefs <copied_base64_string>` (note the `tweakdefs` instead of `tweakunits`). The tool will also remind you of this in the success message.
+
+**General Operation (Applicable to Both Modes):**
+*   **Generate Button**: The button labeled "Generate All Tweaks" processes the inputs based on the currently selected mode.
+*   **Output**:
+    *   **Generated Lua Table**: Shows the Lua code that will be encoded. In "Tweak Specific Units" mode, this is the combined table of all defined unit changes. In "Tweak Definitions" mode, this is a direct copy of your input script.
+    *   **Base64 Command String**: This is the final URL-safe Base64 encoded string.
+    *   **Applying Tweaks**: The method for applying tweaks depends on the mode used:
+        *   For **Tweak Specific Units** mode: Use `!bset tweakunits <copied_base64_string>`.
+        *   For **Tweak Definitions** mode: Use `!bset tweakdefs <copied_base64_string>`.
+        (Remember to boss yourself first using `!boss`, and ensure the copied string does not have any extra spaces or characters).
 
 ## Web UI for Base64 URL-Safe Encoding/Decoding
 

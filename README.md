@@ -62,13 +62,15 @@ This tool provides a user-friendly interface to generate unit tweaks without man
 
 **Interface Guide:**
 *   **Unit Name**: Select the unit you want to modify from the dropdown list. The list includes the readable name and the internal unit definition name (e.g., Pawn (armpw)).
-*   **Stat to Modify**: Select the specific unit statistic you wish to change from the dropdown list (e.g., `metalcost`, `health`). The list currently contains common stats and may be expanded in the future.
+*   **Stat to Modify**: Select the specific unit statistic you wish to change. If the stat you want isn't listed, select the 'Other (Enter Below)' option. This will reveal a text input field where you can type the exact name of the custom stat (e.g., `maxammo`). The predefined list currently contains common stats and may be expanded in the future.
 *   **New Value**: Enter the desired new value for the selected statistic.
-*   Click the **Generate Tweak** button.
+*   **Adding Multiple Tweaks**: Click the 'Add Another Tweak' button to add a new row for defining an additional tweak. You can add as many tweaks as needed.
+*   **Removing a Tweak**: Each tweak entry (except if it's the only one) will have a 'Remove' button next to it. Click this to delete that specific tweak definition.
+*   Click the **Generate All Tweaks** button once you have defined all your desired changes.
 
 **Output:**
-*   **Generated Lua Table**: Shows the Lua code snippet that represents your tweak. This is for informational purposes.
-*   **Base64 Command String**: This is the URL-safe Base64 encoded string you need for the game. Copy this string.
+*   **Generated Lua Table**: Shows the single Lua code snippet that represents *all* your defined tweaks, grouped by unit. For example, if you change the metal cost and build time for a Pawn, and the health for a Grunt, the table will reflect both. This is for informational purposes.
+*   **Base64 Command String**: This is the URL-safe Base64 encoded string for the *entire combined set* of tweaks. Copy this string.
 *   To apply the tweak in Beyond All Reason, use the in-game command: `!bset tweakunits <copied_base64_string>` (remember to boss yourself first using `!boss`, and ensure the copied string does not have any extra spaces or characters).
 
 ## Web UI for Base64 URL-Safe Encoding/Decoding

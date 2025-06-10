@@ -37,15 +37,114 @@ document.addEventListener('DOMContentLoaded', () => {
         messagesDiv.className = type;
     }
 
+    // --- Helper function to get faction info ---
+    function getFactionInfo(unitDefName) {
+        if (!unitDatabase || !unitDatabase.units || !unitDatabase.units.factions) {
+            // Fallback if unitDatabase or factions not loaded
+            let prefix = unitDefName.substring(0, 3); // Default to first 3
+            if (unitDefName.startsWith("raptor_")) prefix = "raptor";
+            else if (unitDefName.startsWith("scav")) prefix = "scav";
+            else if (unitDefName.startsWith("critter_")) prefix = "critter";
+            else if (unitDefName.startsWith("lootbox")) prefix = "lootbox";
+            else if (unitDefName.startsWith("chip")) prefix = "chip";
+
+            return { prefix: prefix, displayName: prefix.charAt(0).toUpperCase() + prefix.slice(1) };
+        }
+
+        const factionMap = unitDatabase.units.factions;
+        const knownPrefixes = {
+            "arm": factionMap["arm"] || "Armada",
+            "cor": factionMap["cor"] || "Cortex",
+            "leg": factionMap["leg"] || "Legion",
+            "raptor": "Raptors", // Covers raptor_
+            "scav": "Scavengers", // Covers scavenger, scav
+            "critter": "Critters",
+            "chip": "Chip",
+            "lootbox": "Lootboxes",
+            // Add other specific multi-letter prefixes here if needed
+        };
+
+        for (const key in knownPrefixes) {
+            if (unitDefName.startsWith(key)) {
+                return { prefix: key, displayName: knownPrefixes[key] };
+            }
+        }
+
+        // Default fallback for prefixes not in knownPrefixes (e.g. "xmasball")
+        let prefix = unitDefName.match(/^[a-zA-Z]+/)?.[0] || "other"; // Get first word part
+        if (prefix.length > 7 && prefix.includes('_')) { // like dbg_sphere
+             prefix = prefix.substring(0, prefix.indexOf('_'));
+        } else if (prefix.length > 7) { // for long prefixes without underscore
+            prefix = unitDefName.substring(0,3); // fallback to first 3
+        }
+
+
+        return { prefix: prefix, displayName: prefix.charAt(0).toUpperCase() + prefix.slice(1) };
+    }
+
+
+    // --- Function to populate a unit select dropdown with optgroups ---
+    function populateUnitSelect(unitSelectElement) {
+        unitSelectElement.innerHTML = ''; // Clear previous options
+
+        if (typeof unitDatabase !== 'undefined' && unitDatabase.units && unitDatabase.units.names) {
+            const groupedUnits = {};
+
+            Object.entries(unitDatabase.units.names).forEach(([unitDefName, readableName]) => {
+                const faction = getFactionInfo(unitDefName);
+                const groupKey = `${faction.displayName} (${faction.prefix})`;
+
+                if (!groupedUnits[groupKey]) {
+                    groupedUnits[groupKey] = [];
+                }
+
+                const option = document.createElement('option');
+                option.value = unitDefName;
+                option.textContent = `${readableName} (${unitDefName})`;
+                groupedUnits[groupKey].push(option);
+            });
+
+            const sortedGroupLabels = Object.keys(groupedUnits).sort();
+
+            sortedGroupLabels.forEach(groupLabel => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = groupLabel;
+
+                const optionsInGroup = groupedUnits[groupLabel];
+                // Sort options within the group by their textContent (readable name)
+                optionsInGroup.sort((a, b) => a.textContent.localeCompare(b.textContent));
+
+                optionsInGroup.forEach(option => {
+                    optgroup.appendChild(option);
+                });
+                unitSelectElement.appendChild(optgroup);
+            });
+
+        } else {
+            console.error('unitDatabase is not loaded or has an unexpected structure for unit population.');
+            const errorOption = document.createElement('option');
+            errorOption.textContent = 'Error loading units';
+            errorOption.disabled = true;
+            unitSelectElement.appendChild(errorOption);
+        }
+
+        // Add "Other" option for custom unit name, outside any optgroup
+        const customOption = document.createElement('option');
+        customOption.value = '_custom_';
+        customOption.textContent = 'Other (Enter Below)';
+        unitSelectElement.appendChild(customOption);
+    }
+
+
     // --- Function to populate a stat select dropdown ---
     function populateStatSelect(statSelectElement) {
+        statSelectElement.innerHTML = ''; // Clear previous options
         commonStats.forEach(statName => {
             const option = document.createElement('option');
             option.value = statName;
             option.textContent = statName;
             statSelectElement.appendChild(option);
         });
-        // Add "Other" option
         const otherOption = document.createElement('option');
         otherOption.value = '_custom_';
         otherOption.textContent = 'Other (Enter Below)';
@@ -56,32 +155,45 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleStatDropdownChange(event) {
         const statSelect = event.target;
         const tweakEntryDiv = statSelect.closest('.tweak-entry');
-        if (!tweakEntryDiv) {
-            console.error('Could not find parent .tweak-entry for stat select:', statSelect);
-            return;
-        }
+        if (!tweakEntryDiv) return;
         const customInput = tweakEntryDiv.querySelector('.customStatNameInput');
-        if (!customInput) {
-            console.error('Could not find .customStatNameInput in entry:', tweakEntryDiv);
-            return;
-        }
+        if (!customInput) return;
 
         if (statSelect.value === '_custom_') {
-            console.log('Custom stat selected. Showing input.');
-            customInput.style.display = 'inline-block'; // Or 'block' depending on desired layout
+            customInput.style.display = 'inline-block';
         } else {
-            console.log('Predefined stat selected. Hiding custom input.');
             customInput.style.display = 'none';
-            customInput.value = ''; // Clear it when hidden
+            customInput.value = '';
         }
     }
 
-    // --- Event delegation for stat dropdown changes ---
+    // --- Function to handle unit dropdown change ---
+    function handleUnitDropdownChange(event) {
+        const unitSelect = event.target;
+        const tweakEntryDiv = unitSelect.closest('.tweak-entry');
+        if (!tweakEntryDiv) return;
+        const customUnitInput = tweakEntryDiv.querySelector('.customUnitNameInput');
+        if (!customUnitInput) return;
+
+        if (unitSelect.value === '_custom_') {
+            console.log('Custom unit selected. Showing input.');
+            customUnitInput.style.display = 'inline-block';
+        } else {
+            console.log('Predefined unit selected. Hiding custom unit input.');
+            customUnitInput.style.display = 'none';
+            customUnitInput.value = '';
+        }
+    }
+
+    // --- Event delegation for dropdown changes within tweakEntriesContainer ---
     if (tweakEntriesContainer) {
         tweakEntriesContainer.addEventListener('change', function(event) {
             if (event.target.classList.contains('statNameSelect')) {
                 console.log('Change event detected on a statNameSelect element.');
                 handleStatDropdownChange(event);
+            } else if (event.target.classList.contains('unitNameSelect')) {
+                console.log('Change event detected on a unitNameSelect element.');
+                handleUnitDropdownChange(event);
             }
         });
     }
@@ -90,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Function to update visibility of Remove buttons ---
     function updateRemoveButtons() {
         const allEntries = tweakEntriesContainer.querySelectorAll('.tweak-entry');
-        allEntries.forEach((entry) => { // Removed index as it's not used
+        allEntries.forEach((entry) => {
             const removeButton = entry.querySelector('.removeTweakButton');
             if (removeButton) {
                 removeButton.style.display = allEntries.length > 1 ? 'inline-block' : 'none';
@@ -103,11 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function createTweakEntry(entryIndex) {
         const entryDiv = document.createElement('div');
         entryDiv.classList.add('tweak-entry');
-        // Ensure IDs are unique for labels as well if needed, or ensure they point to correct input
         entryDiv.innerHTML = `
             <div>
                 <label for="unitNameSelect_${entryIndex}">Unit Name:</label>
                 <select id="unitNameSelect_${entryIndex}" name="unitNameSelect_${entryIndex}" class="unitNameSelect"></select>
+                <input type="text" id="customUnitNameInput_${entryIndex}" name="customUnitNameInput_${entryIndex}" class="customUnitNameInput" style="display:none; margin-top: 5px;" placeholder="Enter custom unit def name">
             </div>
             <div>
                 <label for="statNameSelect_${entryIndex}">Stat to Modify:</label>
@@ -125,25 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const statSelect = entryDiv.querySelector(`#statNameSelect_${entryIndex}`);
         const removeButton = entryDiv.querySelector('.removeTweakButton');
 
-        // Populate Unit Names dropdown for the new entry
-        if (typeof unitDatabase !== 'undefined' && unitDatabase.units && unitDatabase.units.names) {
-            Object.entries(unitDatabase.units.names).forEach(([unitDefName, readableName]) => {
-                const option = document.createElement('option');
-                option.value = unitDefName;
-                option.textContent = `${readableName} (${unitDefName})`;
-                unitSelect.appendChild(option);
-            });
-        } else {
-            const option = document.createElement('option');
-            option.textContent = 'Error loading units';
-            option.disabled = true;
-            unitSelect.appendChild(option);
-        }
+        populateUnitSelect(unitSelect);
+        populateStatSelect(statSelect);
 
-        // Populate Stat Names dropdown for the new entry (including "Other")
-        populateStatSelect(statSelect); // Use the helper function
-
-        // Add event listener to the new Remove button
         removeButton.addEventListener('click', () => {
             console.log('Remove button clicked for entry.');
             entryDiv.remove();
@@ -174,25 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (initialUnitSelect && initialStatSelect) {
         console.log('Populating initial (0th) tweak entry dropdowns.');
-        // Populate Unit Names for the first entry
-        if (typeof unitDatabase !== 'undefined' && unitDatabase.units && unitDatabase.units.names) {
-            Object.entries(unitDatabase.units.names).forEach(([unitDefName, readableName]) => {
-                const option = document.createElement('option');
-                option.value = unitDefName;
-                option.textContent = `${readableName} (${unitDefName})`;
-                initialUnitSelect.appendChild(option);
-            });
-        } else {
-            console.error('unitDatabase is not loaded or has an unexpected structure for initial entry.');
-            displayMessage('Error: Unit data could not be loaded. Please check console.', 'error-message');
-            const option = document.createElement('option');
-            option.textContent = 'Error loading unit names';
-            option.disabled = true;
-            initialUnitSelect.appendChild(option);
-        }
-
-        // Populate Stat Names for the first entry (including "Other")
-        populateStatSelect(initialStatSelect); // Use the helper function
+        populateUnitSelect(initialUnitSelect);
+        populateStatSelect(initialStatSelect);
 
         if(initialRemoveButton){
             initialRemoveButton.addEventListener('click', () => {
@@ -201,12 +280,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateRemoveButtons();
             });
         }
-
     } else {
         console.error('Initial unit or stat select (unitNameSelect_0, statNameSelect_0) not found!');
     }
 
-    updateRemoveButtons(); // Initial call
+    updateRemoveButtons();
 
     // --- Event Listener for "Generate All Tweaks" button ---
     console.log('Attempting to attach event listener to generateButton (Generate All Tweaks).');
@@ -226,13 +304,23 @@ document.addEventListener('DOMContentLoaded', () => {
             allEntries.forEach((entryDiv, index) => {
                 if (validationFailed) return;
 
-                const unitNameValue = entryDiv.querySelector('.unitNameSelect').value;
-                let statNameValue = entryDiv.querySelector('.statNameSelect').value; // Note: 'let' now
+                let unitNameValue = entryDiv.querySelector('.unitNameSelect').value;
+                const customUnitNameInput = entryDiv.querySelector('.customUnitNameInput');
+                let statNameValue = entryDiv.querySelector('.statNameSelect').value;
                 const customStatNameInput = entryDiv.querySelector('.customStatNameInput');
                 const statValueRaw = entryDiv.querySelector('.statValueInput').value;
                 const statValueTrimmed = statValueRaw.trim();
 
-                console.log(`Entry ${index}: Unit='${unitNameValue}', StatDropdown='${statNameValue}', RawValue='${statValueRaw}'`);
+                console.log(`Entry ${index}: UnitDropdown='${unitNameValue}', StatDropdown='${statNameValue}', RawValue='${statValueRaw}'`);
+
+                if (unitNameValue === '_custom_') {
+                    unitNameValue = customUnitNameInput.value.trim();
+                    console.log(`Entry ${index}: Custom unit selected. CustomUnitName='${unitNameValue}'`);
+                    if (!unitNameValue) {
+                        displayMessage(`Error in Entry #${index + 1}: Custom unit name cannot be empty when 'Other' is selected.`, 'error-message');
+                        validationFailed = true; return;
+                    }
+                }
 
                 if (statNameValue === '_custom_') {
                     statNameValue = customStatNameInput.value.trim();
@@ -244,10 +332,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (!unitNameValue) {
-                    displayMessage(`Error in Entry #${index + 1}: Please select a Unit Name.`, 'error-message');
+                    displayMessage(`Error in Entry #${index + 1}: Please select or enter a Unit Name.`, 'error-message');
                     validationFailed = true; return;
                 }
-                if (!statNameValue) { // This will now catch empty custom stat names too
+                if (!statNameValue) {
                     displayMessage(`Error in Entry #${index + 1}: Please select or enter a Stat to Modify.`, 'error-message');
                     validationFailed = true; return;
                 }
@@ -283,11 +371,11 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const unit in combinedTweaks) {
                 let unitStatParts = [];
                 for (const stat in combinedTweaks[unit]) {
-                    unitStatParts.push(` ${stat} = ${combinedTweaks[unit][stat]}`);
+                    unitStatParts.push(`    ${stat} = ${combinedTweaks[unit][stat]}`);
                 }
-                luaStringParts.push(`${unit} = {\n    ${unitStatParts.join(',\n    ')}\n  }`);
+                luaStringParts.push(`  ${unit} = {\n${unitStatParts.join(',\n')}\n  }`);
             }
-            const luaString = `{\n  ${luaStringParts.join(',\n  ')}\n}`; // Added more newlines for readability
+            const luaString = `{\n${luaStringParts.join(',\n')}\n}`;
             console.log('Generated Final Lua String:', luaString);
 
             const encoder = new TextEncoder();

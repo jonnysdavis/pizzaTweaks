@@ -56,6 +56,12 @@
         <!-- This div is for the "Tweak Definitions" UI -->
         <div id="tweakDefsInterface" style="display:none;">
             <h2>Tweak Definitions Script</h2>
+            <div style="margin-bottom: 10px;"> <!-- Wrapper for spacing -->
+                <label for="scriptTemplateSelect" style="display: block; margin-bottom: 5px;">Load Script Template (Optional):</label>
+                <select id="scriptTemplateSelect" name="scriptTemplateSelect" style="width: 100%;">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
             <div>
                 <label for="tweakDefsScriptInput">Enter Lua Script:</label>
                 <textarea id="tweakDefsScriptInput" name="tweakDefsScriptInput" rows="10" style="width: 98%; margin-top: 5px;" placeholder="Enter your Lua script here... for example:

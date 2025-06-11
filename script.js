@@ -19,6 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const unitGroupFiltersContainer = document.getElementById('unitGroupFiltersContainer');
     console.log('unitGroupFiltersContainer:', unitGroupFiltersContainer);
 
+    // Script Template elements
+    const scriptTemplateSelect = document.getElementById('scriptTemplateSelect');
+    console.log('scriptTemplateSelect:', scriptTemplateSelect);
+
     // Mode switching elements
     const modeRadios = document.querySelectorAll('input[name="tweakMode"]');
     console.log('modeRadios:', modeRadios);
@@ -34,6 +38,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let unitGroups = {}; // Populated by buildUnitGroupsData
     let groupFilterState = {}; // Stores true/false for each group label
+
+    const scriptTemplates = {
+        "All Units - Change Property": `for unitDefID, unitDef in pairs(UnitDefs) do
+  -- Ensure the property exists on the unit before trying to change it.
+  if unitDef.YOUR_PROPERTY_HERE then
+    unitDef.YOUR_PROPERTY_HERE = YOUR_VALUE_HERE -- For numbers: 100; For strings: "text"
+  end
+end
+-- Example: unitDef.health = unitDef.health * 1.10 (Increase health by 10%)`,
+
+        "All Cortex Units - Change Property": `for unitDefID, unitDef in pairs(UnitDefs) do
+  if string.sub(unitDefID, 1, 3) == "cor" then -- Targets Cortex units (prefix 'cor')
+    if unitDef.YOUR_PROPERTY_HERE then
+      unitDef.YOUR_PROPERTY_HERE = YOUR_VALUE_HERE
+    end
+  end
+end`,
+
+        "All Armada Units - Change Property": `for unitDefID, unitDef in pairs(UnitDefs) do
+  if string.sub(unitDefID, 1, 3) == "arm" then -- Targets Armada units (prefix 'arm')
+    if unitDef.YOUR_PROPERTY_HERE then
+      unitDef.YOUR_PROPERTY_HERE = YOUR_VALUE_HERE
+    end
+  end
+end`,
+
+        "All Legion Units - Change Property": `for unitDefID, unitDef in pairs(UnitDefs) do
+  if string.sub(unitDefID, 1, 3) == "leg" then -- Targets Legion units (prefix 'leg')
+    if unitDef.YOUR_PROPERTY_HERE then
+      unitDef.YOUR_PROPERTY_HERE = YOUR_VALUE_HERE
+    end
+  end
+end`
+    };
 
     function displayMessage(message, type) {
         messagesDiv.textContent = message;
@@ -331,12 +369,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Setup
     buildUnitGroupsData(); // Build the unitGroups data once
-    // Ensure unitGroupFiltersContainer is valid before calling initializeUnitGroupFilters
-    if (unitGroupFiltersContainer) {
-        initializeUnitGroupFilters(); // Then initialize filters (which uses unitGroups)
+
+    if (unitGroupFiltersContainer) { // Initialize filters if container exists
+        initializeUnitGroupFilters();
     } else {
         console.error("unitGroupFiltersContainer is null, skipping initializeUnitGroupFilters.");
     }
+
+    if (scriptTemplateSelect) { // Populate script templates if select element exists
+        const customOption = document.createElement('option');
+        customOption.value = '_custom_';
+        customOption.textContent = 'Custom Script (Blank Slate)';
+        scriptTemplateSelect.appendChild(customOption);
+
+        for (const templateName in scriptTemplates) {
+            if (scriptTemplates.hasOwnProperty(templateName)) {
+                const option = document.createElement('option');
+                option.value = templateName;
+                option.textContent = templateName;
+                scriptTemplateSelect.appendChild(option);
+            }
+        }
+    } else {
+        console.error("scriptTemplateSelect is null, skipping template population.");
+    }
+
+    // Event listener for script template selection
+    if (scriptTemplateSelect && tweakDefsScriptInput) {
+        scriptTemplateSelect.addEventListener('change', function(event) {
+            const selectedTemplateName = event.target.value;
+            console.log('Script template changed to:', selectedTemplateName);
+
+            if (selectedTemplateName === '_custom_') {
+                // User selected "Custom Script (Blank Slate)"
+                // Current behavior: leave textarea content as is.
+                // This allows users to switch to a template, then back to "Custom"
+                // without losing any custom script they might have started.
+                // If it was blank, it remains blank (placeholder will show).
+                // If they want to clear it, they can manually delete the text.
+                console.log('Custom Script selected. Textarea content retained.');
+            } else if (scriptTemplates.hasOwnProperty(selectedTemplateName)) {
+                tweakDefsScriptInput.value = scriptTemplates[selectedTemplateName];
+                console.log('Loaded template:', selectedTemplateName);
+            } else {
+                // This case should ideally not be reached if the dropdown is populated correctly
+                console.error('Selected template name not found in scriptTemplates:', selectedTemplateName);
+                tweakDefsScriptInput.value = ''; // Fallback: clear textarea
+            }
+        });
+    } else {
+        console.error("Cannot add template select listener: scriptTemplateSelect or tweakDefsScriptInput is null.");
+    }
+
 
     const initialUnitSelect = document.getElementById('unitNameSelect_0');
     const initialStatSelect = document.getElementById('statNameSelect_0');

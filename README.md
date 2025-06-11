@@ -80,8 +80,18 @@ The tool now operates in two modes, selectable via radio buttons at the top:
 **Interface Guide for Tweak Definitions Mode:**
 When you select the 'Tweak Definitions (Advanced Lua Script)' mode:
 *   The interface for tweaking specific units (including filters and multiple entries) will be hidden.
-*   A large text area will appear, labeled 'Enter Lua Script'.
-*   Enter your complete Lua script directly into this text area. An example is provided in the placeholder.
+*   A new section for loading script templates and a large text area for script input will appear.
+*   **Load Script Template (Optional):**
+    Above the main script input area, you'll find a dropdown labeled 'Load Script Template (Optional):'. This feature is designed to help you get started with common scripting tasks by providing pre-made code snippets.
+    - **How to use:** Select a template from the dropdown (e.g., 'All Units - Change Property', 'All Cortex Units - Change Property', etc.). The chosen script template will automatically populate the main 'Enter Lua Script' textarea below it.
+    - **Available Templates include (but may not be limited to):**
+        - 'Custom Script (Blank Slate)': Select this if you want to write your script from scratch. If you had previously loaded or written a script in the textarea, selecting this option will *not* automatically clear it, allowing you to switch back and forth. To start fresh, you can manually clear the textarea.
+        - 'All Units - Change Property': A loop through all units to modify a specified property.
+        - 'All Cortex Units - Change Property': A loop targeting only Cortex units (those with a 'cor' prefix) to modify a property.
+        - 'All Armada Units - Change Property': Similar, for Armada units ('arm' prefix).
+        - 'All Legion Units - Change Property': Similar, for Legion units ('leg' prefix).
+    - **IMPORTANT:** These templates contain placeholders like `YOUR_PROPERTY_HERE` and `YOUR_VALUE_HERE`. You **must** replace these placeholders with the actual property names and values you intend to use. For example, change `YOUR_PROPERTY_HERE` to `metalcost` and `YOUR_VALUE_HERE` to `25` (for a number) or `"My New Description"` (for a string, ensuring quotes are included for string values in Lua).
+*   **Enter Lua Script**: This is the large text area where your script will be placed, either by selecting a template or by typing/pasting directly. An example is provided in the placeholder if no template is selected.
 *   Click the **Generate All Tweaks** button.
 *   The 'Generated Lua Table' output area will show your entered script for verification.
 *   The 'Base64 Command String' output area will show the Base64 encoded version of your entire script.
